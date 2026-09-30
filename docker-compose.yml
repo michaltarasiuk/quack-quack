@@ -1,0 +1,11 @@
+services:
+  duckdb-otlp:
+    image: ghcr.io/smithclay/duckdb-otlp:latest
+    container_name: duckdb-otlp
+    env_file: .env
+    ports:
+      - "4318:4318"
+      - "9494:9494"
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
