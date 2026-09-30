@@ -15,7 +15,7 @@ export default async function Home() {
       token = '${env.DUCKDB_QUACK_TOKEN}'
     );
   `);
-  const rowObjectsJson = await materializedResult.getRowObjectsJson();
+  const rows = await materializedResult.getRows();
 
-  return <pre>{JSON.stringify(rowObjectsJson, undefined, 2)}</pre>;
+  return <pre>{JSON.stringify(rows, undefined, 2)}</pre>;
 }
