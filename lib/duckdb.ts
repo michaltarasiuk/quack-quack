@@ -1,5 +1,4 @@
 import { DuckDBInstance } from "@duckdb/node-api";
-import type { Json } from "@duckdb/node-api";
 
 import { env } from "@/env";
 
@@ -30,7 +29,7 @@ export async function getDuckConnection() {
   return (await getInstance()).connect();
 }
 
-export async function quackQuery(sql: string): Promise<Record<string, Json>[]> {
+export async function quackQuery(sql: string) {
   const connection = await getDuckConnection();
   try {
     const reader = await connection.runAndReadAll(
