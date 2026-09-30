@@ -1,0 +1,20 @@
+---
+description: Commit message style for this repository
+alwaysApply: true
+---
+
+# Commit messages
+
+- Sentence case / imperative subject (e.g. `Add …`, `Remove …`, `Use …`)
+- **End the subject with a period**
+- Concise, one line preferred; optional body only when needed
+
+```text
+# bad
+Add daisyUI and its agent skill
+migrate to Vite+ with Zed editor setup
+
+# good
+Add daisyUI and its agent skill.
+Migrate to Vite+ with Zed editor setup.
+```
