@@ -1,21 +1,21 @@
-import { env } from "@/env";
-import { getDuckConnection } from "@/lib/duckdb";
+import { quackQuery } from "@/lib/duckdb";
 
 export default async function Home() {
-  const connection = await getDuckConnection();
-
-  const materializedResult = await connection.run(`
-    FROM quack_query(
-      'quack:localhost:9494',
-      $$
-      SELECT trace_id, name
-      FROM lake.main.otlp_traces
-      LIMIT 100
-      $$,
-      token = '${env.DUCKDB_QUACK_TOKEN}'
-    );
+  const rows = await quackQuery(`
+    SELECT
+      service_name,
+      name,
+      status_code,
+      kind,
+      start_time_unix_nano,
+      duration_time_unix_nano,
+      trace_id,
+      span_id,
+      parent_span_id
+    FROM lake.main.otlp_traces
+    ORDER BY start_time_unix_nano DESC
+    LIMIT 100
   `);
-  const rows = await materializedResult.getRows();
 
   return <pre>{JSON.stringify(rows, undefined, 2)}</pre>;
 }

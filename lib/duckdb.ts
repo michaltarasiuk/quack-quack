@@ -1,27 +1,48 @@
 import { DuckDBInstance } from "@duckdb/node-api";
+import type { Json } from "@duckdb/node-api";
+
+import { env } from "@/env";
 
 const globalForDuckdb = globalThis as typeof globalThis & {
-  __quackDuckdbInstance?: Promise<DuckDBInstance>;
+  __quackDuckdb?: Promise<DuckDBInstance>;
 };
 
-async function createReadyInstance() {
+async function createInstance() {
   const instance = await DuckDBInstance.create();
-  const bootstrap = await instance.connect();
-  await bootstrap.run("INSTALL quack");
-  await bootstrap.run("LOAD quack");
-  bootstrap.disconnectSync();
+  const connection = await instance.connect();
+  try {
+    await connection.run("INSTALL quack; LOAD quack;");
+  } finally {
+    connection.disconnectSync();
+  }
   return instance;
 }
 
-function getReadyInstance() {
-  globalForDuckdb.__quackDuckdbInstance ??= createReadyInstance().catch((error) => {
-    globalForDuckdb.__quackDuckdbInstance = undefined;
+function getInstance() {
+  globalForDuckdb.__quackDuckdb ??= createInstance().catch((error) => {
+    globalForDuckdb.__quackDuckdb = undefined;
     throw error;
   });
-  return globalForDuckdb.__quackDuckdbInstance;
+  return globalForDuckdb.__quackDuckdb;
 }
 
 export async function getDuckConnection() {
-  const instance = await getReadyInstance();
-  return instance.connect();
+  return (await getInstance()).connect();
+}
+
+export async function quackQuery(sql: string): Promise<Record<string, Json>[]> {
+  const connection = await getDuckConnection();
+  try {
+    const reader = await connection.runAndReadAll(
+      `FROM quack_query($endpoint, $query, token = $token)`,
+      {
+        endpoint: env.DUCKDB_QUACK_ENDPOINT,
+        query: sql,
+        token: env.DUCKDB_QUACK_TOKEN,
+      },
+    );
+    return reader.getRowObjectsJson();
+  } finally {
+    connection.disconnectSync();
+  }
 }
